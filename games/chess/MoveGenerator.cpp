@@ -23,16 +23,17 @@ void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInLi
   TempPiece.PieceLocation.Row = NewPieceLocation.Row;
   
   //check for pawn moves
-  if (PieceType == "Pawn")
-  {
-    PawnMoves(TempPiece, Direction, HasMoved);
+  if (PieceType == "Pawn" && PawnMoves(TempPiece, Direction, HasMoved))
     MovablePieces.push(TempPiece);
-  }//end if pawn
+  else if (PieceType == "Night")
+  {
+
+  }
   //MovablePieces.push(TempPiece);
   return;
 }//end GenerateAllMoves
 
-void MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool HasMoved)
+bool MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool HasMoved)
 {
   //single move if possible
   if (CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column)))
@@ -65,8 +66,12 @@ void MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool 
   //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row), Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction));
   //capture if possible
   //if (Pawn.Column > 'a' && CurrentBoard.BoardMap[Pawn.Column][Pawn.Row + Direction] )
+
   cout << "Pawn moves:" << Pawn.PossibleMoves.size() << endl;
-  return;
+  if (Pawn.PossibleMoves.size() > 0)
+    return true;
+  else 
+    return false;
 }//end PawnMoves
 
 ChessPiece MoveGenerator::RandomMove()
