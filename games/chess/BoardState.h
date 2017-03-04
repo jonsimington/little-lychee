@@ -13,6 +13,7 @@ using namespace std;
 #include <string>
 #include <sstream>
 #include <iterator>
+#include <algorithm>
 
 class BoardState
 {
@@ -20,6 +21,7 @@ class BoardState
     BoardState();
     void ForsythEdwardsNotationBoardInput(string InputString);
     void PrintMap();
+    void PrintLocation(Location LocationtoPrint);
     vector<string> SplitByChar(const string StringtoSplit, char SeparatingChar);
     bool IsLocationEmpty(Location TargetLocation);
     void MovePiece(Location StartLocation, Location DestinationLocation);
@@ -27,13 +29,13 @@ class BoardState
     vector<vector<ChessPiece> > BoardMap;
     bool WhitesTurn;
     bool WhiteKingSideCastle;
-    bool WhileQueenSideCastle;
+    bool WhiteQueenSideCastle;
     bool BlackKingSideCastle;
     bool BlackQueenSideCastle;
     Location EnPassantTarget;
     int HalfMoveClock;
     int FullMoveNumber;
-    queue<string> MoveHistory;      
+    //queue<string> MoveHistory;      
 };//end class ChessLogic
 
 #endif

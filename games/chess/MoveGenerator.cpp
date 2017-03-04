@@ -7,7 +7,9 @@
 
 MoveGenerator::MoveGenerator(BoardState GameBoard)
 {
+  //set default state
   CurrentBoard = GameBoard;
+  return;
 }//end constructor
 
 void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInList, const int Direction, const bool HasMoved, const string PieceType)
@@ -33,19 +35,34 @@ void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInLi
 void MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool HasMoved)
 {
   //single move if possible
-  if (CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction)))
+  if (CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column)))
   {
-    Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction));
-    cout << "move1" << endl;
+    Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
+    //cout << "1 Row:" << Pawn.PieceLocation.Row - '1' << " Column:" << Pawn.PieceLocation.Column << endl;
+    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row, Pawn.PieceLocation.Column));
+    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
 
     //double move if possible
-    if (!HasMoved && CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + (2*Direction))));
+    if (!HasMoved && CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column)));
     {
-      Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + (2*Direction)));
-      cout << "move2" << endl;
+      cout << "HasMoved:" << HasMoved << endl;
+      Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column));
+      //cout << "2 Row:" << Pawn.PieceLocation.Row - '0' << " Column:" << Pawn.PieceLocation.Column << endl;
     }
-
   }
+  else
+  {
+    //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Row, Pawn.PieceLocation.Column), Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
+    //CurrentBoard.PrintMap();
+
+    //cout << "0 Row:" << Pawn.PieceLocation.Row - '1' << " Column:" << Pawn.PieceLocation.Column << " Dir:" << Direction << " Empty:" << CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column)) << endl;
+    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row, Pawn.PieceLocation.Column));
+    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
+    //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row), Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction));
+    //CurrentBoard.PrintMap();
+  }
+
+  //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row), Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction));
   //capture if possible
   //if (Pawn.Column > 'a' && CurrentBoard.BoardMap[Pawn.Column][Pawn.Row + Direction] )
   cout << "Pawn moves:" << Pawn.PossibleMoves.size() << endl;
@@ -56,13 +73,10 @@ ChessPiece MoveGenerator::RandomMove()
 {
   //vars
   int RandLocation = rand() % MovablePieces.size();
-  cout << "MovablePieces:" << MovablePieces.size() << endl;
 
   //remove until rand
   for (int i = 0; i < RandLocation; i++)
     MovablePieces.pop();
-
-  cout << "Moves:" << MovablePieces.front().PossibleMoves.size() << endl;
 
   return MovablePieces.front();    
 }//end RandomMove

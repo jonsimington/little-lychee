@@ -5,7 +5,6 @@
 #ifndef HEADER_H
 #define HEADER_H
 
-#include <list>
 #include <vector>
 
 struct Location
@@ -21,7 +20,7 @@ struct Location
   }//end default constructor
 
   //constructor
-  Location(char NewColumn, char NewRow)
+  Location(char NewRow, char NewColumn)
   {
     Column = NewColumn;
     Row = NewRow;
@@ -40,11 +39,12 @@ struct ChessPiece
   //Default constructor
   ChessPiece()
   {
-    bool EmptySpace = true;
-    bool WhitePiece = false;
-    char PieceType = '*';
+    EmptySpace = true;
+    WhitePiece = false;
+    PieceType = '*';
+    ListId = -1;
     PieceLocation = Location();
-    PossibleMoves.clear();
+    //PossibleMoves.clear();
   }//end default constructor
 };//end chesspiece
 
