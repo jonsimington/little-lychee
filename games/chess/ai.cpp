@@ -10,6 +10,8 @@ namespace cpp_client
 
 namespace chess
 {
+//Global Vars
+MoveGenerator MasterList = MoveGenerator(BoardState());
 
 /// <summary>
 /// This returns your AI's name to the game server.
@@ -29,6 +31,15 @@ void AI::start()
 {
     // This is a good place to initialize any variables
     srand(time(NULL));
+
+    //set initial board state and add to master list
+    cout << "loading";
+    BoardState StartingBoard;
+    StartingBoard.ForsythEdwardsNotationBoardInput("");
+    MasterList = MoveGenerator(StartingBoard);
+    cout << "----loading finished" << endl;
+    StartingBoard.PrintMap();
+    cout << "printed" << endl;
 }
 
 /// <summary>
@@ -56,6 +67,7 @@ void AI::ended(bool won, const std::string& reason)
 bool AI::run_turn()
 {
     // Here is where you'll want to code your AI.
+    cout << "in my turn" << endl;
 
     // We've provided sample code that:
     //    1) prints the board to the console
@@ -75,11 +87,34 @@ bool AI::run_turn()
     // 3) print how much time remaining this AI has to calculate moves
     std::cout << "Time Remaining: " << player->time_remaining << " ns" << std::endl;
 
+    cout << "Test:" << player->rank_direction << ":" << endl;
+
     // 4) make a random (and probably invalid) move.
-    chess::Piece random_piece = player->pieces[rand() % player->pieces.size()];
-    std::string random_file(1, 'a' + rand() % 8);
-    int random_rank = (rand() % 8) + 1;
-    random_piece->move(random_file, random_rank);
+    // chess::Piece random_piece = player->pieces[rand() % player->pieces.size()];
+    // std::string random_file(1, 'a' + rand() % 8);
+    // int random_rank = (rand() % 8) + 1;
+    // random_piece->move(random_file, random_rank);
+    // while (!player->made_move)
+    // {
+    //     chess::Piece random_pawn = player->pieces[rand() % player->pieces.size()];
+    //     if (random_pawn->type == "Pawn")
+    //         random_pawn->move(random_pawn->file, random_pawn->rank + player->rank_direction);
+    // }//end while
+
+    //generate possible moves for my pieces
+    // for (int i = 0; i < player->pieces.size(); i++)
+    // {
+    //     cout << i << endl;
+    //     MasterList.GenerateMoves(Location(player->pieces[i]->file[0], static_cast<char>(player->pieces[i]->rank + '0')), i, player->rank_direction, player->pieces[i]->has_moved, player->pieces[i]->type);
+    // }//end for
+    // ChessPiece PiecetoMove = MasterList.RandomMove();
+    // cout << "possiblemoves:" << PiecetoMove.PossibleMoves.size() << endl;
+    // Location RandomMove = PiecetoMove.PossibleMoves[(rand() % PiecetoMove.PossibleMoves.size())];
+    // cout << "Trying to move piece: " << PiecetoMove.ListId << endl;
+    // chess::Piece rndPawn = player->pieces[PiecetoMove.ListId];
+    // cout << "  Column:" << string(1, RandomMove.Column) << "|" << endl;
+    // cout << "  Row   :" << (RandomMove.Row - '0') << "|" << endl;
+    // rndPawn->move(string(1, RandomMove.Column), RandomMove.Row - '0');
 
     return true; // to signify we are done with our turn.
 }

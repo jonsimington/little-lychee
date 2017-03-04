@@ -12,6 +12,8 @@
 #include "../../joueur/src/attr_wrapper.hpp"
 
 // You can add additional #includes here
+#include "BoardState.h"
+#include "MoveGenerator.h"
 
 namespace cpp_client
 {
