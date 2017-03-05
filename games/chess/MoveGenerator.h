@@ -14,6 +14,7 @@ class MoveGenerator
     MoveGenerator(BoardState GameBoard);
     void GenerateMoves(Location NewPieceLocation, const int PlaceInList, const int Direction, const bool HasMoved, const string PieceType);
     bool PawnMoves(ChessPiece& Pawn, const int Direction, const bool HasMoved);
+    bool KingMoves(ChessPiece& King);
     ChessPiece RandomMove();
   private:
     BoardState CurrentBoard;

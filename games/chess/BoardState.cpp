@@ -34,32 +34,32 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
   for (int i = 0; i < 8; i++)
   {
     //loop through items in row
-    for (int j = 0; j < RowsString.at(i).size(); j++)
+    for (int j = 0; j < RowsString[i].size(); j++)
     {
       //if set of empty spaces
-      if (RowsString.at(i).at(j) < '9')
+      if (RowsString[i][j] < '9')
       {
-        for (int k = 0; k < RowsString.at(i).at(j) - '0'; k++)
+        for (int k = 0; k < RowsString[i][j] - '0'; k++)
         {
           //set empty space and increment column
-          BoardMap.at(7-i).at(ColumnLocation).EmptySpace = true;
-          BoardMap.at(7-i).at(ColumnLocation).WhitePiece = false;
-          BoardMap.at(7-i).at(ColumnLocation).PieceType = '*';
-          BoardMap.at(7-i).at(ColumnLocation).ListId = -1;
-          BoardMap.at(7-i).at(ColumnLocation).PieceLocation.Row = '-';
-          BoardMap.at(7-i).at(ColumnLocation).PieceLocation.Column = '-';
+          BoardMap[7-i][ColumnLocation].EmptySpace = true;
+          BoardMap[7-i][ColumnLocation].WhitePiece = false;
+          BoardMap[7-i][ColumnLocation].PieceType = '*';
+          BoardMap[7-i][ColumnLocation].ListId = -1;
+          BoardMap[7-i][ColumnLocation].PieceLocation.Row = '-';
+          BoardMap[7-i][ColumnLocation].PieceLocation.Column = '-';
           ColumnLocation++;
         }//end for
       }//end if
       else //a piece
       {
         //set piece parameters
-        BoardMap.at(7-i).at(ColumnLocation).EmptySpace = false;
-        BoardMap.at(7-i).at(ColumnLocation).WhitePiece = (RowsString.at(i).at(j) > 'Z');
-        BoardMap.at(7-i).at(ColumnLocation).PieceType = RowsString.at(i).at(j);
-        BoardMap.at(7-i).at(ColumnLocation).ListId = -1;
-        BoardMap.at(7-i).at(ColumnLocation).PieceLocation.Row = 7 - i + '1';
-        BoardMap.at(7-i).at(ColumnLocation).PieceLocation.Column = j + 'a';
+        BoardMap[7-i][ColumnLocation].EmptySpace = false;
+        BoardMap[7-i][ColumnLocation].WhitePiece = (RowsString[i][j] > 'Z');
+        BoardMap[7-i][ColumnLocation].PieceType = RowsString[i][j];
+        BoardMap[7-i][ColumnLocation].ListId = -1;
+        BoardMap[7-i][ColumnLocation].PieceLocation.Row = 7 - i + '1';
+        BoardMap[7-i][ColumnLocation].PieceLocation.Column = j + 'a';
         ColumnLocation++;
       }//end else
     }//end for j
@@ -73,36 +73,36 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
   //reverse(BoardMap.begin(), BoardMap.end());
 
   //is it whites turn
-  WhitesTurn = SplitString.at(1).at(0) == 'w';
+  WhitesTurn = SplitString[1][0] == 'w';
 
   ColumnLocation = 0;
   //Which castleings are allowed
-  if (SplitString.at(2).at(ColumnLocation) == 'K')
+  if (SplitString[2][ColumnLocation] == 'K')
   {
     WhiteKingSideCastle = true;
     ColumnLocation++;
   }//end if WhiteKingSideCastle
-  if (SplitString.at(2).size() > ColumnLocation && SplitString.at(2).at(ColumnLocation) == 'Q')
+  if (SplitString[2].size() > ColumnLocation && SplitString[2][ColumnLocation] == 'Q')
   {
     WhiteQueenSideCastle = true;
     ColumnLocation++;
   }//end if WhiteQueenSideCastle
-  if (SplitString.at(2).size() > ColumnLocation && SplitString.at(2).at(ColumnLocation) == 'k')
+  if (SplitString[2].size() > ColumnLocation && SplitString[2][ColumnLocation] == 'k')
   {
     BlackKingSideCastle = true;
     ColumnLocation++;
   }//end if BlackKingSideCastle
-  if (SplitString.at(2).size() > ColumnLocation && SplitString.at(2).at(ColumnLocation) == 'q')
+  if (SplitString[2].size() > ColumnLocation && SplitString[2][ColumnLocation] == 'q')
   {
     BlackQueenSideCastle = true;
     ColumnLocation++;
   }//end if BlackQueenSideCastle
 
   //set EnPassantTarget if there is one
-  if (SplitString.at(3) != "-")
+  if (SplitString[3] != "-")
   {
-    EnPassantTarget.Row = SplitString.at(3).at(0);
-    EnPassantTarget.Column = SplitString.at(3).at(1);
+    EnPassantTarget.Row = SplitString[3][0];
+    EnPassantTarget.Column = SplitString[3][1];
   }//end if
   else
   {
@@ -111,8 +111,8 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
   }//end else
 
   //set move numbers
-  HalfMoveClock = stoi(SplitString.at(4));
-  FullMoveNumber = stoi(SplitString.at(5));
+  HalfMoveClock = stoi(SplitString[4]);
+  FullMoveNumber = stoi(SplitString[5]);
 
   return;
 }//end ForsythEdwardsNotationBoardInput

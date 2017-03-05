@@ -27,6 +27,7 @@ class BoardState
     bool IsPieceEnemy(Location MyPiece, Location OtherPiece);
     void MovePiece(Location StartLocation, Location DestinationLocation);
     Location EnPassantLocation();
+    bool InCheck(bool White);
   private:
     vector<vector<ChessPiece> > BoardMap;
     bool WhitesTurn;

@@ -25,10 +25,8 @@ void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInLi
   //check for pawn moves
   if (PieceType == "Pawn" && PawnMoves(TempPiece, Direction, HasMoved))
     MovablePieces.push(TempPiece);
-  else if (PieceType == "Night")
-  {
-
-  }
+  else if (PieceType == "King" && KingMoves(TempPiece))
+    MovablePieces.push(TempPiece);
   //MovablePieces.push(TempPiece);
   return;
 }//end GenerateAllMoves
@@ -74,6 +72,55 @@ bool MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool 
   else 
     return false;
 }//end PawnMoves
+
+bool MoveGenerator::KingMoves(ChessPiece& King)
+{
+  //vars
+  Location TempLocation = King.PieceLocation;
+  bool NotonTopRow = TempLocation.Row < '8';
+  bool NotonBottomRow = TempLocation.Row > '1';
+  bool NotonLeftColumn = TempLocation.Column > 'a';
+  bool NotonRightColumn = TempLocation.Column < 'h';
+
+  //Above
+  TempLocation.Row = TempLocation.Row + 1;
+  if (NotonTopRow && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //Up right
+  TempLocation.Column = TempLocation.Column + 1;
+  if (NotonTopRow && NotonRightColumn && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //right
+  TempLocation.Row = TempLocation.Row - 1;
+  if (NotonRightColumn && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //right bottom
+  TempLocation.Row = TempLocation.Row - 1;
+  if (NotonRightColumn && NotonBottomRow && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //bottom
+  TempLocation.Column = TempLocation.Column - 1;
+  if (NotonBottomRow && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //bottom left
+  TempLocation.Column = TempLocation.Column - 1;
+  if (NotonBottomRow && NotonLeftColumn && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //left
+  TempLocation.Row = TempLocation.Row + 1;
+  if (NotonLeftColumn && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+  //top left
+  TempLocation.Row = TempLocation.Row + 1;
+  if (NotonLeftColumn && NotonTopRow && (CurrentBoard.IsLocationEmpty(TempLocation) || CurrentBoard.IsPieceEnemy(King.PieceLocation, TempLocation)))
+    King.PossibleMoves.push_back(TempLocation);
+
+  //make sure their is at least one valid move
+  if (King.PossibleMoves.size() > 0)
+    return true;
+  else
+    return false;
+}//end KingMoves
 
 ChessPiece MoveGenerator::RandomMove()
 {
