@@ -24,7 +24,9 @@ class BoardState
     void PrintLocation(Location LocationtoPrint);
     vector<string> SplitByChar(const string StringtoSplit, char SeparatingChar);
     bool IsLocationEmpty(Location TargetLocation);
+    bool IsPieceEnemy(Location MyPiece, Location OtherPiece);
     void MovePiece(Location StartLocation, Location DestinationLocation);
+    Location EnPassantLocation();
   private:
     vector<vector<ChessPiece> > BoardMap;
     bool WhitesTurn;

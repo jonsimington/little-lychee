@@ -39,35 +39,36 @@ bool MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool 
   if (CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column)))
   {
     Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
-    //cout << "1 Row:" << Pawn.PieceLocation.Row - '1' << " Column:" << Pawn.PieceLocation.Column << endl;
-    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row, Pawn.PieceLocation.Column));
-    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
 
     //double move if possible
-    if (!HasMoved && CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column)));
+    if (!HasMoved && CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column)))
     {
-      cout << "HasMoved:" << HasMoved << endl;
       Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column));
       //cout << "2 Row:" << Pawn.PieceLocation.Row - '0' << " Column:" << Pawn.PieceLocation.Column << endl;
     }
   }
-  else
+  //check for leftward diagonal moves
+  if (Pawn.PieceLocation.Column > 'a')
   {
-    //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Row, Pawn.PieceLocation.Column), Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
-    //CurrentBoard.PrintMap();
-
-    //cout << "0 Row:" << Pawn.PieceLocation.Row - '1' << " Column:" << Pawn.PieceLocation.Column << " Dir:" << Direction << " Empty:" << CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column)) << endl;
-    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row, Pawn.PieceLocation.Column));
-    //CurrentBoard.PrintLocation(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
-    //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row), Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction));
-    //CurrentBoard.PrintMap();
-  }
-
+    if (CurrentBoard.IsPieceEnemy(Pawn.PieceLocation, Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column - 1)))
+      Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column - 1));
+    else if (CurrentBoard.EnPassantLocation().Row == Pawn.PieceLocation.Row + Direction && CurrentBoard.EnPassantLocation().Column == Pawn.PieceLocation.Column - 1)
+      Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column - 1));
+  }//end else if
+  //check for rightward diagonal moves
+  if (Pawn.PieceLocation.Column < 'h')
+  {
+    if (CurrentBoard.IsPieceEnemy(Pawn.PieceLocation, Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column + 1)))
+      Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column + 1));
+    else if (CurrentBoard.EnPassantLocation().Row == Pawn.PieceLocation.Row + Direction && CurrentBoard.EnPassantLocation().Column == Pawn.PieceLocation.Column + 1)
+      Pawn.PossibleMoves.push_back(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column + 1));
+  }//end else if
+  
   //CurrentBoard.MovePiece(Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row), Location(Pawn.PieceLocation.Column, Pawn.PieceLocation.Row + Direction));
   //capture if possible
   //if (Pawn.Column > 'a' && CurrentBoard.BoardMap[Pawn.Column][Pawn.Row + Direction] )
 
-  cout << "Pawn moves:" << Pawn.PossibleMoves.size() << endl;
+  //cout << "Pawn moves:" << Pawn.PossibleMoves.size() << endl;
   if (Pawn.PossibleMoves.size() > 0)
     return true;
   else 

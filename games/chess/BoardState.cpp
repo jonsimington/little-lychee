@@ -169,6 +169,19 @@ bool BoardState::IsLocationEmpty(Location TargetLocation)
   return BoardMap[TargetLocation.Row - '1'][TargetLocation.Column - 'a'].EmptySpace;
 }//end IsLocationEmpty
 
+bool BoardState::IsPieceEnemy(Location MyPiece, Location OtherPiece)
+{
+  //test if I am white and they are black
+  if (BoardMap[MyPiece.Row - '1'][MyPiece.Column - 'a'].PieceType < 'Z' && BoardMap[OtherPiece.Row - '1'][OtherPiece.Column - 'a'].PieceType > 'Z')
+    return true;
+  //test if I am black and they are white
+  else if (BoardMap[MyPiece.Row - '1'][MyPiece.Column - 'a'].PieceType > 'Z' && BoardMap[OtherPiece.Row - '1'][OtherPiece.Column - 'a'].PieceType < 'Z' && BoardMap[OtherPiece.Row - '1'][OtherPiece.Column - 'a'].PieceType > 'A')
+    return true;
+  //not a enemy piece
+  else
+    return false;
+}//end IsPieceEnemy
+
 void BoardState::MovePiece(Location StartLocation, Location DestinationLocation)
 {
   //vars
@@ -176,8 +189,15 @@ void BoardState::MovePiece(Location StartLocation, Location DestinationLocation)
   TempPiece.EmptySpace = true;
   TempPiece.PieceType = '%';
 
+  //move piece to destination
   BoardMap[DestinationLocation.Row - '1'][DestinationLocation.Column - 'a'] = BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'];
+  //reset locaiton moving from
   BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'] = TempPiece;
 
   return;
 }//end MovePiece
+
+Location BoardState::EnPassantLocation()
+{
+  return EnPassantTarget;
+}//end EnPassantValid

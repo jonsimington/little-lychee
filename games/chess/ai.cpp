@@ -68,16 +68,16 @@ bool AI::run_turn()
 {
     MoveGenerator MasterList = MoveGenerator(BoardState());
     //set initial board state and add to master list
-    cout << "loading";
+    //cout << "loading";
     BoardState StartingBoard = BoardState();
     StartingBoard.ForsythEdwardsNotationBoardInput(game->fen);
     MasterList = MoveGenerator(StartingBoard);
-    cout << "----loading finished" << endl;
-    StartingBoard.PrintMap();
-    cout << "printed" << endl;
+    //cout << "----loading finished" << endl;
+    //StartingBoard.PrintMap();
+    //cout << "printed" << endl;
 
     // Here is where you'll want to code your AI.
-    cout << "in my turn" << endl;
+    //cout << "in my turn" << endl;
 
     // We've provided sample code that:
     //    1) prints the board to the console
@@ -89,15 +89,15 @@ bool AI::run_turn()
     print_current_board();
 
     // 2) print the opponent's last move to the console
-    if(game->moves.size() > 0)
-    {
-        std::cout << "Opponent's Last Move: '" << game->moves[game->moves.size() - 1]->san << "'" << std::endl;
-    }
+    // if(game->moves.size() > 0)
+    // {
+    //     std::cout << "Opponent's Last Move: '" << game->moves[game->moves.size() - 1]->san << "'" << std::endl;
+    // }
 
-    // 3) print how much time remaining this AI has to calculate moves
-    std::cout << "Time Remaining: " << player->time_remaining << " ns" << std::endl;
+    // // 3) print how much time remaining this AI has to calculate moves
+    // std::cout << "Time Remaining: " << player->time_remaining << " ns" << std::endl;
 
-    cout << "Test:" << player->rank_direction << ":Color:" << player->color << endl;
+    // cout << "Test:" << player->rank_direction << ":Color:" << player->color << endl;
 
     // 4) make a random (and probably invalid) move.
     // chess::Piece random_piece = player->pieces[rand() % player->pieces.size()];
@@ -117,7 +117,7 @@ bool AI::run_turn()
     //generate possible moves for my pieces
     for (int i = 0; i < player->pieces.size(); i++)
     {
-        cout << i << endl;
+        //cout << i << endl;
         MasterList.GenerateMoves(Location(static_cast<char>(player->pieces[i]->rank + '0'), player->pieces[i]->file[0]), i, player->rank_direction, player->pieces[i]->has_moved, player->pieces[i]->type);
     }//end for
     ChessPiece PiecetoMove = MasterList.RandomMove();
@@ -132,7 +132,7 @@ bool AI::run_turn()
     int iRank = RandomMove.Row - '0';
     cout << "  Column:" << sColumn << "|" << rndPawn->file << endl;
     cout << "  Row   :" << iRank << "|" << rndPawn->rank << endl;
-    rndPawn->move(sColumn, iRank);
+    rndPawn->move(sColumn, iRank, "Queen");
     cout << "Move Finised" << endl;
 
     return true; // to signify we are done with our turn.
