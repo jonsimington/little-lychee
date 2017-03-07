@@ -75,7 +75,7 @@ bool AI::run_turn()
     //initialize board
     StartingBoard.ForsythEdwardsNotationBoardInput(game->fen);
     MasterList = MoveGenerator(StartingBoard);
-    print_current_board();
+    //print_current_board();
 
     //generate possible moves for my pieces
     for (int i = 0; i < player->pieces.size(); i++)
