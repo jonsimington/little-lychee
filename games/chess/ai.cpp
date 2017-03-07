@@ -97,7 +97,7 @@ bool AI::run_turn()
     // // 3) print how much time remaining this AI has to calculate moves
     // std::cout << "Time Remaining: " << player->time_remaining << " ns" << std::endl;
 
-    // cout << "Test:" << player->rank_direction << ":Color:" << player->color << endl;
+    //cout << "Test:" << player->rank_direction << ":Color:" << player->color << endl;
 
     // 4) make a random (and probably invalid) move.
     // chess::Piece random_piece = player->pieces[rand() % player->pieces.size()];
@@ -120,20 +120,9 @@ bool AI::run_turn()
         //cout << i << endl;
         MasterList.GenerateMoves(Location(static_cast<char>(player->pieces[i]->rank + '0'), player->pieces[i]->file[0]), i, player->rank_direction, player->pieces[i]->has_moved, player->pieces[i]->type);
     }//end for
-    ChessPiece PiecetoMove = MasterList.RandomMove();
-    cout << "possiblemoves:" << PiecetoMove.PossibleMoves.size() << endl;
-    int iRand = rand() % PiecetoMove.PossibleMoves.size();
-    Location RandomMove = PiecetoMove.PossibleMoves[(iRand)];
-    cout << "Trying to move piece: " << PiecetoMove.ListId << "  Move: " << iRand <<  endl;
-    chess::Piece rndPawn = player->pieces[PiecetoMove.ListId];
-
-    //move piece to Rank - Column
-    string sColumn = string(1, RandomMove.Column);
-    int iRank = RandomMove.Row - '0';
-    cout << "  Column:" << sColumn << "|" << rndPawn->file << endl;
-    cout << "  Row   :" << iRank << "|" << rndPawn->rank << endl;
-    rndPawn->move(sColumn, iRank, "Queen");
-    cout << "Move Finised" << endl;
+    int ListId = 0;
+    Location DestinationLocation = MasterList.RandomMove(ListId);
+    player->pieces[ListId]->move(string(1, DestinationLocation.Column), (DestinationLocation.Row - '0'), "Queen");
 
     return true; // to signify we are done with our turn.
 }

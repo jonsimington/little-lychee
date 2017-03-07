@@ -6,6 +6,7 @@
 #define HEADER_H
 
 #include <vector>
+#include <queue>
 
 struct Location
 {
@@ -34,7 +35,7 @@ struct ChessPiece
   char PieceType;
   int ListId;
   Location PieceLocation;    
-  vector<Location> PossibleMoves;
+  queue<Location> PossibleMoves;
 
   //Default constructor
   ChessPiece()

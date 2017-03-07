@@ -17,6 +17,7 @@ BoardState::BoardState()
   EnPassantTarget = Location();
   HalfMoveClock = 0;
   FullMoveNumber = 0;
+  KingLocation = Location();
   vector<vector<ChessPiece> > TempMap(8, vector<ChessPiece>(8, ChessPiece()));
   BoardMap = TempMap;
   return;
@@ -29,6 +30,9 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
   vector<string> SplitString = SplitByChar(InputString, ' ');
   vector<string> RowsString = SplitByChar(SplitString[0], '/');
   int ColumnLocation = 0;
+
+  //is it whites turn
+  WhitesTurn = SplitString[1][0] == 'w';
 
   //get board state
   for (int i = 0; i < 8; i++)
@@ -59,7 +63,14 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
         BoardMap[7-i][ColumnLocation].PieceType = RowsString[i][j];
         BoardMap[7-i][ColumnLocation].ListId = -1;
         BoardMap[7-i][ColumnLocation].PieceLocation.Row = 7 - i + '1';
-        BoardMap[7-i][ColumnLocation].PieceLocation.Column = j + 'a';
+        BoardMap[7-i][ColumnLocation].PieceLocation.Column = ColumnLocation + 'a';
+
+        //set location of King piece to save search time later
+        if (BoardMap[7-i][ColumnLocation].PieceType == 'K' && WhitesTurn)
+          KingLocation = BoardMap[7-i][ColumnLocation].PieceLocation;
+        else if (BoardMap[7-i][ColumnLocation].PieceType == 'k' && !WhitesTurn)
+          KingLocation = BoardMap[7-i][ColumnLocation].PieceLocation;
+
         ColumnLocation++;
       }//end else
     }//end for j
@@ -67,13 +78,6 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
     //reset column location
     ColumnLocation = 0;
   }//end for i
-
-  cout << "Map done" << endl;
-
-  //reverse(BoardMap.begin(), BoardMap.end());
-
-  //is it whites turn
-  WhitesTurn = SplitString[1][0] == 'w';
 
   ColumnLocation = 0;
   //Which castleings are allowed
@@ -113,7 +117,6 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
   //set move numbers
   HalfMoveClock = stoi(SplitString[4]);
   FullMoveNumber = stoi(SplitString[5]);
-
   return;
 }//end ForsythEdwardsNotationBoardInput
 
@@ -136,15 +139,17 @@ void BoardState::PrintMap()
   cout << "EnPassantTarget: " << EnPassantTarget.Row << EnPassantTarget.Column << endl;
   cout << "HalfMoveClock: " << HalfMoveClock << endl;
   cout << "FullMoveNumber: " << FullMoveNumber << endl;
+  cout << "KingLocation:" << KingLocation.Row << KingLocation.Column << endl;
 
   return;
 }//end PrintMap
 
 void BoardState::PrintLocation(Location LocationtoPrint)
 {
-  //cout << "EmptySpace  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].EmptySpace << endl;
-  //cout << "WhitePieve  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].WhitePiece << endl;
-  //cout << "PieceType   " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceType << endl;
+  //output for debuging
+  cout << "EmptySpace  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].EmptySpace << endl;
+  cout << "WhitePieve  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].WhitePiece << endl;
+  cout << "PieceType   " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceType << endl;
   cout << "Row:" << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceLocation.Row << " Column:" << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceLocation.Column << endl;
   cout << "Row:" << (LocationtoPrint.Row - '1') << " Column:" << (LocationtoPrint.Column) << endl;
 }//end PrintLocation
@@ -187,17 +192,33 @@ void BoardState::MovePiece(Location StartLocation, Location DestinationLocation)
   //vars
   ChessPiece TempPiece;
   TempPiece.EmptySpace = true;
-  TempPiece.PieceType = '%';
+  TempPiece.PieceType = '*';
 
   //move piece to destination
   BoardMap[DestinationLocation.Row - '1'][DestinationLocation.Column - 'a'] = BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'];
   //reset locaiton moving from
   BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'] = TempPiece;
+  //Set new location
+  BoardMap[DestinationLocation.Row - '1'][DestinationLocation.Column - 'a'].PieceLocation.Row = DestinationLocation.Row;
+  BoardMap[DestinationLocation.Row - '1'][DestinationLocation.Column - 'a'].PieceLocation.Column = DestinationLocation.Column;
 
   return;
 }//end MovePiece
+
+bool BoardState::IsPieceType(const Location LookHere, const char CompareChar)
+{
+  if (BoardMap[LookHere.Row - '1'][LookHere.Column - 'a'].PieceType == CompareChar || BoardMap[LookHere.Row - '1'][LookHere.Column - 'a'].PieceType == CompareChar + ('a' - 'A'))
+    return true;
+  else
+    return false;
+}//end IsPieceType
 
 Location BoardState::EnPassantLocation()
 {
   return EnPassantTarget;
 }//end EnPassantValid
+
+Location BoardState::returnKingLocation()
+{
+  return KingLocation;
+}//end KingLocation
