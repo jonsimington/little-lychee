@@ -358,8 +358,8 @@ bool MoveGenerator::RemoveInCheckMoves(ChessPiece& MovedPiece, const int Directi
       !BishopMovesCheck(TempPiece) &&
       !QueenMovesCheck(TempPiece) &&
       !KnightMovesCheck(TempPiece) && 
-      !CheckMovesInDirection(TempPiece, Direction, 1, true) &&
-      !CheckMovesInDirection(TempPiece, Direction, -1, true))
+      !IsPieceThreateningKing(TempPiece, Direction, 1, true, 'P') &&
+      !IsPieceThreateningKing(TempPiece, Direction, -1, true, 'P'))
     {
       //re-add if not in check
       MovedPiece.PossibleMoves.push(TempLocation);
