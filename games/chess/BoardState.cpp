@@ -193,6 +193,18 @@ void BoardState::MovePiece(Location StartLocation, Location DestinationLocation)
   ChessPiece TempPiece;
   TempPiece.EmptySpace = true;
   TempPiece.PieceType = '*';
+  int ColumnChange = StartLocation.Column - DestinationLocation.Column;
+
+  //move rook if castle
+  if ((BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'].PieceType == 'K' || BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'].PieceType == 'k') && ColumnChange > 1)
+  {
+    //queen side
+    if (ColumnChange == -2)
+      MovePiece(Location(StartLocation.Row, StartLocation.Column - 4), Location(StartLocation.Row, StartLocation.Column - 1));
+    //king side
+    else
+      MovePiece(Location(StartLocation.Row, StartLocation.Column + 3), Location(StartLocation.Row, StartLocation.Column + 1));
+  }//end if
 
   //move piece to destination
   BoardMap[DestinationLocation.Row - '1'][DestinationLocation.Column - 'a'] = BoardMap[StartLocation.Row - '1'][StartLocation.Column - 'a'];
