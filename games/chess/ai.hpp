@@ -78,9 +78,7 @@ public:
     void print_current_board();
 
     // You can add additional methods here.
-
-
-
+    
     // ####################
     // Don't edit these!
     // ####################

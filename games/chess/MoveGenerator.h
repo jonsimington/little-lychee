@@ -14,74 +14,103 @@ class MoveGenerator
     /// <summary>
     /// Constructor for movegenerator, takes in already defined Gameboard
     /// <summary>
-    MoveGenerator(BoardState GameBoard);
+    MoveGenerator();
+    /// <summary>
+    /// create a board state with the given parameters
+    /// <summary>
+    MoveGenerator(BoardState GameBoard, vector<MyChessPiece> OldMoveHistory, bool pMaximizing, bool SwitchDir);
     /// <summary>
     /// Generate all moves for the given piece and save them in movable pieces
     /// <summary>
-    void GenerateMoves(Location NewPieceLocation, const int PlaceInList, const int Direction, const bool HasMoved, const string PieceType);
+    void GenerateMoves(Location NewPieceLocation, const int PlaceInList, const string PieceType, const int pDepthToGo);
     /// <summary>
     /// Generatate all pawn moves
     /// <summary>
-    bool PawnMoves(ChessPiece& Pawn, const int Direction, const bool HasMoved);
+    void PawnMoves(MyChessPiece& Pawn);
     /// <summary>
     /// testing possible king moves
     /// <summary>
-    bool KingMoves(ChessPiece& King);
+    void KingMoves(MyChessPiece& King);
     /// <summary>
     /// check if king is in check from king
     /// <summary>
-    bool KingMovesCheck(ChessPiece King);
+    bool KingMovesCheck(MyChessPiece King);
     /// <summary>
     /// testing possible rook moves
     /// <summary>
-    bool RookMoves(ChessPiece& Rook);
+    void RookMoves(MyChessPiece& Rook);
     /// <summary>
     /// check if rook is in check from rook
     /// <summary>
-    bool RookMovesCheck(ChessPiece Rook);
+    bool RookMovesCheck(MyChessPiece Rook);
     /// <summary>
     /// testing possible bishop moves
     /// <summary>
-    bool BishopMoves(ChessPiece& Bishop);
+    void BishopMoves(MyChessPiece& Bishop);
     /// <summary>
     /// check if bishop is in check from bishop
     /// <summary>
-    bool BishopMovesCheck(ChessPiece Bishop);
+    bool BishopMovesCheck(MyChessPiece Bishop);
     /// <summary>
     /// testing possible queen moves
     /// <summary>
-    bool QueenMoves(ChessPiece& Queen);
+    void QueenMoves(MyChessPiece& Queen);
     /// <summary>
     /// check if queen is in check from queen
     /// <summary>
-    bool QueenMovesCheck(ChessPiece Queen);
+    bool QueenMovesCheck(MyChessPiece Queen);
     /// <summary>
     /// testing possible knight moves
     /// <summary>
-    bool KnightMoves(ChessPiece& Knight);
+    void KnightMoves(MyChessPiece& Knight);
     /// <summary>
     /// check if knight is in check from knight
     /// <summary>
-    bool KnightMovesCheck(ChessPiece Knight);
+    bool KnightMovesCheck(MyChessPiece Knight);
     /// <summary>
     /// check moves in straight lines around piece works for k,q,n,r,b
     /// <summary>
-    bool CheckMovesInDirection(ChessPiece& StartingPiece, const int RowChange, const int ColumnChange, const bool KingorKnight);
+    bool CheckMovesInDirection(MyChessPiece& StartingPiece, const int RowChange, const int ColumnChange, const bool KingorKnight);
     /// <summary>
     /// check if any piece is threatening king
     /// <summary>
-    bool IsPieceThreateningKing(const ChessPiece King, const int RowChange, const int ColumnChange, const bool KingorKnight, const char LookingFor);
+    bool IsPieceThreateningKing(const MyChessPiece King, const int RowChange, const int ColumnChange, const bool KingorKnight, const char LookingFor);
     /// <summary>
-    /// remove any generated moves that end my king in check
+    /// check if move leaves king in check
     /// <summary>
-    bool RemoveInCheckMoves(ChessPiece& MovedPiece, const int Direction);
+    bool DoesMoveEndInCheck(MyChessPiece MovedPiece, Location EndLocation);
     /// <summary>
-    /// pick random piece and then random move for that piece
+    /// return the max rated move on top of priority queue
     /// <summary>
-    Location RandomMove(int& ListId);
+    Location MiniMax(int& ListId);
+    /// <summary>
+    /// take move and generate new board state to find next moves
+    /// <summary>
+    int FindNextDepthHeuristic(Location DestinationLocation, char MovedPieceType);
+    /// <summary>
+    /// generate all moves possible for the next depth
+    /// <summary>
+    void NextDepthMoves(const int DepthToGo);
+    /// <summary>
+    /// add opponents move the the history queue
+    /// <summary>
+    void AddOpponentMove(Location NewPieceLocation, const string PieceType);
+    /// <summary>
+    /// return the heuristic calculated for the current board state
+    /// <summary>
+    int ReturnHeuristicValue() {return HeuristicValue;}
+
+    vector<MyChessPiece> MoveHistory;
+    priority_queue<MovePiece> MovePiecesQueue;
   private:
     BoardState CurrentBoard;
-    queue<ChessPiece> MovablePieces;
+    int DepthToGo;
+    int HeuristicValue;
+    bool PossibleSimplifiedDraw;
+    bool Maximizing;
+    //queue<MyChessPiece> MovablePieces;
+    //priority_queue<MyChessPiece> MovablePieces;
+    
 };//end class MoveGenerator
 
 #endif

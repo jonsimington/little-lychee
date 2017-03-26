@@ -18,7 +18,7 @@ BoardState::BoardState()
   HalfMoveClock = 0;
   FullMoveNumber = 0;
   KingLocation = Location();
-  vector<vector<ChessPiece> > TempMap(8, vector<ChessPiece>(8, ChessPiece()));
+  vector<vector<MyChessPiece> > TempMap(8, vector<MyChessPiece>(8, MyChessPiece()));
   BoardMap = TempMap;
   return;
 }//end default constructor
@@ -33,6 +33,10 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
 
   //is it whites turn
   WhitesTurn = SplitString[1][0] == 'w';
+  if (WhitesTurn)//white
+    Direction = 1;
+  else //black
+    Direction = -1;
 
   //get board state
   for (int i = 0; i < 8; i++)
@@ -47,7 +51,6 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
         {
           //set empty space and increment column
           BoardMap[7-i][ColumnLocation].EmptySpace = true;
-          BoardMap[7-i][ColumnLocation].WhitePiece = false;
           BoardMap[7-i][ColumnLocation].PieceType = '*';
           BoardMap[7-i][ColumnLocation].ListId = -1;
           BoardMap[7-i][ColumnLocation].PieceLocation.Row = '-';
@@ -59,7 +62,6 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
       {
         //set piece parameters
         BoardMap[7-i][ColumnLocation].EmptySpace = false;
-        BoardMap[7-i][ColumnLocation].WhitePiece = (RowsString[i][j] > 'Z');
         BoardMap[7-i][ColumnLocation].PieceType = RowsString[i][j];
         BoardMap[7-i][ColumnLocation].ListId = -1;
         BoardMap[7-i][ColumnLocation].PieceLocation.Row = 7 - i + '1';
@@ -70,6 +72,12 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
           KingLocation = BoardMap[7-i][ColumnLocation].PieceLocation;
         else if (BoardMap[7-i][ColumnLocation].PieceType == 'k' && !WhitesTurn)
           KingLocation = BoardMap[7-i][ColumnLocation].PieceLocation;
+
+        //create vector of pointers to my and enemy pieces
+        // if ((BoardMap[7-i][ColumnLocation].PieceType < 'a') == (WhitesTurn))
+        //   MyPieces.push_back(&BoardMap[7-i][ColumnLocation]);
+        // else
+        //   EnemyPieces.push_back(&BoardMap[7-i][ColumnLocation]);
 
         ColumnLocation++;
       }//end else
@@ -117,6 +125,10 @@ void BoardState::ForsythEdwardsNotationBoardInput(string InputString)
   //set move numbers
   HalfMoveClock = stoi(SplitString[4]);
   FullMoveNumber = stoi(SplitString[5]);
+
+  // for (int i = 0; i < MyPieces.size(); i++)
+  //   cout << "MyPieces:" << MyPieces[i]->PieceType << endl;
+
   return;
 }//end ForsythEdwardsNotationBoardInput
 
@@ -147,8 +159,7 @@ void BoardState::PrintMap()
 void BoardState::PrintLocation(Location LocationtoPrint)
 {
   //output for debuging
-  cout << "EmptySpace  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].EmptySpace << endl;
-  cout << "WhitePieve  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].WhitePiece << endl;
+  //cout << "EmptySpace  " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].EmptySpace << endl;
   cout << "PieceType   " << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceType << endl;
   cout << "Row:" << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceLocation.Row << " Column:" << BoardMap[LocationtoPrint.Row - '1'][LocationtoPrint.Column - 'a'].PieceLocation.Column << endl;
   cout << "Row:" << (LocationtoPrint.Row - '1') << " Column:" << (LocationtoPrint.Column) << endl;
@@ -171,7 +182,7 @@ vector<string> BoardState::SplitByChar(const string StringtoSplit, char Separati
 
 bool BoardState::IsLocationEmpty(Location TargetLocation)
 {
-  return BoardMap[TargetLocation.Row - '1'][TargetLocation.Column - 'a'].EmptySpace;
+  return BoardMap[TargetLocation.Row - '1'][TargetLocation.Column - 'a'].PieceType == '*';
 }//end IsLocationEmpty
 
 bool BoardState::IsPieceEnemy(Location MyPiece, Location OtherPiece)
@@ -190,7 +201,7 @@ bool BoardState::IsPieceEnemy(Location MyPiece, Location OtherPiece)
 void BoardState::MovePiece(Location StartLocation, Location DestinationLocation)
 {
   //vars
-  ChessPiece TempPiece;
+  MyChessPiece TempPiece;
   TempPiece.EmptySpace = true;
   TempPiece.PieceType = '*';
   int ColumnChange = StartLocation.Column - DestinationLocation.Column;
@@ -224,6 +235,18 @@ bool BoardState::IsPieceType(const Location LookHere, const char CompareChar)
   else
     return false;
 }//end IsPieceType
+
+bool BoardState::IsPieceMine(const Location MyPiece)
+{
+  //if black piece
+  if (BoardMap[MyPiece.Row - '1'][MyPiece.Column - 'a'].PieceType > 'a' && Direction == 1)
+    return true;
+  //if white piece
+  else if (BoardMap[MyPiece.Row - '1'][MyPiece.Column - 'a'].PieceType > 'A' && BoardMap[MyPiece.Row - '1'][MyPiece.Column - 'a'].PieceType < 'a' && Direction == -1)
+    return true;
+  else 
+    return false;
+}//end IsPieceMine
 
 Location BoardState::EnPassantLocation()
 {

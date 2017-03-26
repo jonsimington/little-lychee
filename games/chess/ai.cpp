@@ -11,7 +11,8 @@ namespace cpp_client
 namespace chess
 {
 //Global Vars
-//MoveGenerator MasterList = MoveGenerator(BoardState());
+MoveGenerator MasterList;
+int TempCount;
 
 /// <summary>
 /// This returns your AI's name to the game server.
@@ -31,15 +32,8 @@ void AI::start()
 {
     // This is a good place to initialize any variables
     srand(time(NULL));
-
-    // //set initial board state and add to master list
-    // cout << "loading";
-    // BoardState StartingBoard;
-    // StartingBoard.ForsythEdwardsNotationBoardInput("");
-    // //MasterList = MoveGenerator(StartingBoard);
-    // cout << "----loading finished" << endl;
-    // //StartingBoard.PrintMap();
-    // cout << "printed" << endl;
+    MasterList = MoveGenerator();
+    TempCount = 0;
 }
 
 /// <summary>
@@ -67,25 +61,28 @@ void AI::ended(bool won, const std::string& reason)
 bool AI::run_turn()
 {
     //vars
-    MoveGenerator MasterList = MoveGenerator(BoardState());
-    BoardState StartingBoard = BoardState();
     int ListId = 0;
     Location DestinationLocation = Location();
+    BoardState StartingBoard = BoardState();
 
     //initialize board
     StartingBoard.ForsythEdwardsNotationBoardInput(game->fen);
-    MasterList = MoveGenerator(StartingBoard);
-    //print_current_board();
-
+    MasterList = MoveGenerator(StartingBoard, MasterList.MoveHistory, true, false);
+    print_current_board();
+    
+    //add opponent last move to history
+    if (game->moves.size() > 0)
+        MasterList.AddOpponentMove(Location(static_cast<char>(game->moves[game->moves.size() - 1]->to_rank + '0'), game->moves[game->moves.size() - 1]->to_file[0]), game->moves[game->moves.size()-1]->piece->type);
+    
     //generate possible moves for my pieces
     for (int i = 0; i < player->pieces.size(); i++)
-        MasterList.GenerateMoves(Location(static_cast<char>(player->pieces[i]->rank + '0'), player->pieces[i]->file[0]), i, player->rank_direction, player->pieces[i]->has_moved, player->pieces[i]->type);
+        MasterList.GenerateMoves(Location(static_cast<char>(player->pieces[i]->rank + '0'), player->pieces[i]->file[0]), i, player->pieces[i]->type, 1);
     
     //pick random piece and make a valid move
-    DestinationLocation = MasterList.RandomMove(ListId);
+    DestinationLocation = MasterList.MiniMax(ListId);
     if (DestinationLocation.Row != '-')
         player->pieces[ListId]->move(string(1, DestinationLocation.Column), (DestinationLocation.Row - '0'), "Queen");
-
+    
     return true; // to signify we are done with our turn.
 }
 

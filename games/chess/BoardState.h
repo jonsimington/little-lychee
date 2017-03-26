@@ -55,6 +55,10 @@ class BoardState
     /// <summary>
     bool IsPieceType(const Location LookHere, const char CompareChar);
     /// <summary>
+    /// is the piece at the given location match the direction
+    /// <summary>
+    bool IsPieceMine(const Location MyPiece);
+    /// <summary>
     /// return location of EnPassant
     /// <summary>
     Location EnPassantLocation();
@@ -66,14 +70,17 @@ class BoardState
     bool WhiteQueenSideCastle;
     bool BlackKingSideCastle;
     bool BlackQueenSideCastle;
+    int Direction;
+    vector<vector<MyChessPiece> > BoardMap;
   private:
-    vector<vector<ChessPiece> > BoardMap;
+    
+    //vector<MyChessPiece*> MyPieces;
+    //vector<MyChessPiece*> EnemyPieces;
     bool WhitesTurn;    
     Location EnPassantTarget;
     int HalfMoveClock;
     int FullMoveNumber;
-    Location KingLocation;
-    //queue<string> MoveHistory;      
+    Location KingLocation;    
 };//end class ChessLogic
 
 #endif

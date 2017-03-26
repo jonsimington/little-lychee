@@ -28,25 +28,47 @@ struct Location
   }//end constructor
 };//end location
 
-struct ChessPiece
+struct MyChessPiece
 {
   bool EmptySpace;
-  bool WhitePiece;
   char PieceType;
   int ListId;
-  Location PieceLocation;    
-  queue<Location> PossibleMoves;
+  //int HeurValue;
+  Location PieceLocation;
+  //queue<Location> PossibleMoves;
 
   //Default constructor
-  ChessPiece()
+  MyChessPiece()
   {
     EmptySpace = true;
-    WhitePiece = false;
     PieceType = '*';
     ListId = -1;
+    //HeurValue = 0;
     PieceLocation = Location();
-    //PossibleMoves.clear();
   }//end default constructor
-};//end chesspiece
+};//end Mychesspiece
+
+struct MovePiece
+{
+  MyChessPiece CurrentPiece;
+  Location EndLoc;
+  int HeurValue;
+
+  //Default constructor
+  MovePiece()
+  {
+    CurrentPiece = MyChessPiece();
+    EndLoc = Location();
+    HeurValue = 0;
+  }//end defualt constructor
+
+  //constructor
+  MovePiece(MyChessPiece PieceBeingMoved, Location End, int Value)
+  {
+    CurrentPiece = PieceBeingMoved;
+    EndLoc = End;
+    HeurValue = Value;
+  }//end
+};
 
 #endif

@@ -5,25 +5,67 @@
 //include files
 #include "MoveGenerator.h"
 
-MoveGenerator::MoveGenerator(BoardState GameBoard)
+bool operator<(const MovePiece& MP1, const MovePiece& MP2)
+{
+  //compare heuristic value assigned to both pieces
+  return (MP1.HeurValue > MP2.HeurValue);
+}
+
+MoveGenerator::MoveGenerator()
 {
   //set default state
-  CurrentBoard = GameBoard;
+  CurrentBoard = BoardState();
+  HeuristicValue = 0;
+  PossibleSimplifiedDraw = false;
+  DepthToGo = 0;
+  Maximizing = true;
   return;
 }//end constructor
 
-void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInList, const int Direction, const bool HasMoved, const string PieceType)
+MoveGenerator::MoveGenerator(BoardState GameBoard, vector<MyChessPiece> OldMoveHistory, bool pMaximizing, bool SwitchDir)
+{
+  //set default state
+  CurrentBoard = GameBoard;
+  HeuristicValue = 0;
+  PossibleSimplifiedDraw = false;
+  DepthToGo = 0;
+  Maximizing = pMaximizing;
+  if (SwitchDir)
+    CurrentBoard.Direction *= -1;
+
+  //copy up to last 8 moves
+  if (OldMoveHistory.size() < 10)
+    MoveHistory = OldMoveHistory;
+  else
+  {
+    //add last 8 moves to history
+    for (int i = OldMoveHistory.size() - 9; i <= (OldMoveHistory.size() - 1); i++)
+    {
+      MoveHistory.push_back(OldMoveHistory[i]);
+    }//end for
+  }//emd else
+  
+  return;
+}//end constructor
+
+void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInList, const string PieceType, const int pDepthToGo)
 {
   //vars
-  ChessPiece TempPiece;
+  MyChessPiece TempPiece;
   
   //set values to temp
   TempPiece.ListId = PlaceInList;
   TempPiece.PieceLocation.Column = NewPieceLocation.Column;
   TempPiece.PieceLocation.Row = NewPieceLocation.Row;
-  //set piece type baised on direction
+  
+  //if enough moves check for repeats
+  if (MoveHistory.size() >= 7)
+    PossibleSimplifiedDraw = true;
+  //set depth to go
+  DepthToGo = pDepthToGo;
 
-  if (Direction == 1)//white
+  //set piece type baised on direction
+  if (CurrentBoard.Direction == 1)//white
     TempPiece.PieceType = PieceType[0];
   else //black
     TempPiece.PieceType = PieceType[0] + ('a' - 'A');
@@ -32,60 +74,64 @@ void MoveGenerator::GenerateMoves(Location NewPieceLocation, const int PlaceInLi
     TempPiece.PieceType += 'N' - 'K';
   
   //check for each peices movess
-  if (PieceType == "Pawn" && PawnMoves(TempPiece, Direction, HasMoved) && RemoveInCheckMoves(TempPiece, Direction))
-    MovablePieces.push(TempPiece);
-  else if (PieceType == "King" && KingMoves(TempPiece) && RemoveInCheckMoves(TempPiece, Direction))
-    MovablePieces.push(TempPiece);
-  else if (PieceType == "Rook" && RookMoves(TempPiece) && RemoveInCheckMoves(TempPiece, Direction))
-    MovablePieces.push(TempPiece);
-  else if (PieceType == "Bishop" && BishopMoves(TempPiece) && RemoveInCheckMoves(TempPiece, Direction))
-    MovablePieces.push(TempPiece);
-  else if (PieceType == "Queen" && QueenMoves(TempPiece) && RemoveInCheckMoves(TempPiece, Direction))
-    MovablePieces.push(TempPiece);
-  else if (PieceType == "Knight" && KnightMoves(TempPiece) && RemoveInCheckMoves(TempPiece, Direction))
-    MovablePieces.push(TempPiece);
+  if (PieceType == "Pawn") 
+    PawnMoves(TempPiece);
+  else if (PieceType == "King")
+    KingMoves(TempPiece);
+  else if (PieceType == "Rook")
+    RookMoves(TempPiece);
+  else if (PieceType == "Bishop")
+    BishopMoves(TempPiece);
+  else if (PieceType == "Queen")
+    QueenMoves(TempPiece);
+  else if (PieceType == "Knight")
+    KnightMoves(TempPiece);
+
   return;
 }//end GenerateAllMoves
 
-bool MoveGenerator::PawnMoves(ChessPiece& Pawn, const int Direction, const bool HasMoved)
+void MoveGenerator::PawnMoves(MyChessPiece& Pawn)
 {
+  //vars
+  bool HasMoved = true;
+
+  if ((Pawn.PieceLocation.Row == '2' && CurrentBoard.Direction == 1) || (Pawn.PieceLocation.Row == '7' && CurrentBoard.Direction == -1))
+    HasMoved = false;
+
   //single move if possible
-  if (CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column)))
+  if (CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column)))
   {
-    Pawn.PossibleMoves.push(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column));
+    DoesMoveEndInCheck(Pawn, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column));
 
     //double move if possible
-    if (!HasMoved && CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column)))
+    if (!HasMoved && CurrentBoard.IsLocationEmpty(Location(Pawn.PieceLocation.Row + (2*CurrentBoard.Direction), Pawn.PieceLocation.Column)))
     {
-      Pawn.PossibleMoves.push(Location(Pawn.PieceLocation.Row + (2*Direction), Pawn.PieceLocation.Column));
-      //cout << "2 Row:" << Pawn.PieceLocation.Row - '0' << " Column:" << Pawn.PieceLocation.Column << endl;
+      DoesMoveEndInCheck(Pawn, Location(Pawn.PieceLocation.Row + (2*CurrentBoard.Direction), Pawn.PieceLocation.Column));
     }
   }
   //check for leftward diagonal moves
   if (Pawn.PieceLocation.Column > 'a')
   {
-    if (CurrentBoard.IsPieceEnemy(Pawn.PieceLocation, Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column - 1)))
-      Pawn.PossibleMoves.push(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column - 1));
-    else if (CurrentBoard.EnPassantLocation().Row == Pawn.PieceLocation.Row + Direction && CurrentBoard.EnPassantLocation().Column == Pawn.PieceLocation.Column - 1)
-      Pawn.PossibleMoves.push(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column - 1));
+    if (CurrentBoard.IsPieceEnemy(Pawn.PieceLocation, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column - 1)))
+      DoesMoveEndInCheck(Pawn, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column - 1));
+    else if (CurrentBoard.EnPassantLocation().Row == Pawn.PieceLocation.Row + CurrentBoard.Direction && CurrentBoard.EnPassantLocation().Column == Pawn.PieceLocation.Column - 1)
+      DoesMoveEndInCheck(Pawn, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column - 1));
   }//end else if
   //check for rightward diagonal moves
   if (Pawn.PieceLocation.Column < 'h')
   {
-    if (CurrentBoard.IsPieceEnemy(Pawn.PieceLocation, Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column + 1)))
-      Pawn.PossibleMoves.push(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column + 1));
-    else if (CurrentBoard.EnPassantLocation().Row == Pawn.PieceLocation.Row + Direction && CurrentBoard.EnPassantLocation().Column == Pawn.PieceLocation.Column + 1)
-      Pawn.PossibleMoves.push(Location(Pawn.PieceLocation.Row + Direction, Pawn.PieceLocation.Column + 1));
+    if (CurrentBoard.IsPieceEnemy(Pawn.PieceLocation, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column + 1)))
+      DoesMoveEndInCheck(Pawn, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column + 1));
+    else if (CurrentBoard.EnPassantLocation().Row == Pawn.PieceLocation.Row + CurrentBoard.Direction && CurrentBoard.EnPassantLocation().Column == Pawn.PieceLocation.Column + 1)
+      DoesMoveEndInCheck(Pawn, Location(Pawn.PieceLocation.Row + CurrentBoard.Direction, Pawn.PieceLocation.Column + 1));
   }//end else if
-  
-  //cout << "Pawn moves:" << Pawn.PossibleMoves.size() << endl;
-  if (Pawn.PossibleMoves.size() > 0)
-    return true;
-  else 
-    return false;
+
+  //add piece value to heuristic
+  HeuristicValue += 1;
+  return;
 }//end PawnMoves
 
-bool MoveGenerator::KingMoves(ChessPiece& King)
+void MoveGenerator::KingMoves(MyChessPiece& King)
 {
   //check area around king
   CheckMovesInDirection(King,  1,  0, true); 
@@ -103,28 +149,24 @@ bool MoveGenerator::KingMoves(ChessPiece& King)
     CurrentBoard.IsLocationEmpty(Location(King.PieceLocation.Row, King.PieceLocation.Column - 3)))
   {
     if (King.PieceType == 'K' && CurrentBoard.WhiteQueenSideCastle)
-      King.PossibleMoves.push(Location(King.PieceLocation.Row, King.PieceLocation.Column - 2));
+      DoesMoveEndInCheck(King, Location(King.PieceLocation.Row, King.PieceLocation.Column - 2));
     else if (King.PieceType == 'k' && CurrentBoard.BlackQueenSideCastle)
-      King.PossibleMoves.push(Location(King.PieceLocation.Row, King.PieceLocation.Column - 2));
+      DoesMoveEndInCheck(King, Location(King.PieceLocation.Row, King.PieceLocation.Column - 2));
   }//end if
   //king side castleing
   if (CurrentBoard.IsLocationEmpty(Location(King.PieceLocation.Row, King.PieceLocation.Column + 1)) && 
     CurrentBoard.IsLocationEmpty(Location(King.PieceLocation.Row, King.PieceLocation.Column + 2)))
   {
     if (King.PieceType == 'K' && CurrentBoard.WhiteKingSideCastle)
-      King.PossibleMoves.push(Location(King.PieceLocation.Row, King.PieceLocation.Column + 2));
+      DoesMoveEndInCheck(King, Location(King.PieceLocation.Row, King.PieceLocation.Column + 2));
     else if (King.PieceType == 'k' && CurrentBoard.BlackKingSideCastle)
-      King.PossibleMoves.push(Location(King.PieceLocation.Row, King.PieceLocation.Column + 2));
+      DoesMoveEndInCheck(King, Location(King.PieceLocation.Row, King.PieceLocation.Column + 2));
   }//end else if
-  
-  //make sure their is at least one valid move
-  if (King.PossibleMoves.size() > 0)
-    return true;
-  else
-    return false;
+
+  return;
 }//end KingMoves
 
-bool MoveGenerator::KingMovesCheck(ChessPiece King)
+bool MoveGenerator::KingMovesCheck(MyChessPiece King)
 {
   //return true if a king is threatened
   if (IsPieceThreateningKing(King,  1,  0, true, 'K') || 
@@ -140,7 +182,7 @@ bool MoveGenerator::KingMovesCheck(ChessPiece King)
     return false;
 }//end KingMovesCheck
 
-bool MoveGenerator::RookMoves(ChessPiece& Rook)
+void MoveGenerator::RookMoves(MyChessPiece& Rook)
 {
   //check straight lines for moves
   CheckMovesInDirection(Rook,  1,  0, false);//down
@@ -148,14 +190,12 @@ bool MoveGenerator::RookMoves(ChessPiece& Rook)
   CheckMovesInDirection(Rook,  0, -1, false);//left
   CheckMovesInDirection(Rook,  0,  1, false);//right
 
-  //make sure their is at least one valid move
-  if (Rook.PossibleMoves.size() > 0)
-    return true;
-  else
-    return false;
+  //add piece value to heuristic
+  HeuristicValue += 5;
+  return;
 }//end RookMoves
 
-bool MoveGenerator::RookMovesCheck(ChessPiece Rook)
+bool MoveGenerator::RookMovesCheck(MyChessPiece Rook)
 {
   //is king in check from rook
   if (IsPieceThreateningKing(Rook,  1,  0, false, 'R') ||//down
@@ -167,7 +207,7 @@ bool MoveGenerator::RookMovesCheck(ChessPiece Rook)
     return false;
 }//end RookMovesCheck
 
-bool MoveGenerator::BishopMoves(ChessPiece& Bishop)
+void MoveGenerator::BishopMoves(MyChessPiece& Bishop)
 {
   //check diagonal lines for moves
   CheckMovesInDirection(Bishop,  1,  1, false);//down right
@@ -175,14 +215,12 @@ bool MoveGenerator::BishopMoves(ChessPiece& Bishop)
   CheckMovesInDirection(Bishop,  1, -1, false);//down left
   CheckMovesInDirection(Bishop, -1, -1, false);//up left
 
-  //make sure their is at least one valid move
-  if (Bishop.PossibleMoves.size() > 0)
-    return true;
-  else
-    return false;
+  //add piece value to heuristic
+  HeuristicValue += 3;
+  return;
 }//end BishopMoves
 
-bool MoveGenerator::BishopMovesCheck(ChessPiece Bishop)
+bool MoveGenerator::BishopMovesCheck(MyChessPiece Bishop)
 {
   //is king in check from bishop
   if (IsPieceThreateningKing(Bishop,  1,  1, false, 'B') ||//down right
@@ -194,7 +232,7 @@ bool MoveGenerator::BishopMovesCheck(ChessPiece Bishop)
     return false;
 }//end BishopMovesCheck
 
-bool MoveGenerator::QueenMoves(ChessPiece& Queen)
+void MoveGenerator::QueenMoves(MyChessPiece& Queen)
 {
   //check strainght and diagonal lines for moves
   CheckMovesInDirection(Queen, -1,  0, false);//up
@@ -205,14 +243,12 @@ bool MoveGenerator::QueenMoves(ChessPiece& Queen)
   CheckMovesInDirection(Queen,  1, -1, false);//down left
   CheckMovesInDirection(Queen, -1, -1, false);//up left
 
-  //make sure their is at least one valid move
-  if (Queen.PossibleMoves.size() > 0)
-    return true;
-  else
-    return false;
+  //add piece value to heuristic
+  HeuristicValue += 9;
+  return;
 }//end QueenMoves
 
-bool MoveGenerator::QueenMovesCheck(ChessPiece Queen)
+bool MoveGenerator::QueenMovesCheck(MyChessPiece Queen)
 {
   //is king in check from queen
   if (IsPieceThreateningKing(Queen,  1,  0, false, 'Q') ||//down
@@ -228,7 +264,7 @@ bool MoveGenerator::QueenMovesCheck(ChessPiece Queen)
     return false;
 }//end QueenMovesCheck
 
-bool MoveGenerator::KnightMoves(ChessPiece& Knight)
+void MoveGenerator::KnightMoves(MyChessPiece& Knight)
 {
   //check for valid Knight moves
   CheckMovesInDirection(Knight,  2,  1, true);
@@ -239,14 +275,13 @@ bool MoveGenerator::KnightMoves(ChessPiece& Knight)
   CheckMovesInDirection(Knight, -1,  2, true);
   CheckMovesInDirection(Knight, -1, -2, true);
   CheckMovesInDirection(Knight,  1, -2, true);
-  //make sure their is at least one valid move
-  if (Knight.PossibleMoves.size() > 0)
-    return true;
-  else
-    return false;
+
+  //add piece value to heuristic
+  HeuristicValue += 3;
+  return;
 }//end KnightMoves
 
-bool MoveGenerator::KnightMovesCheck(ChessPiece Knight)
+bool MoveGenerator::KnightMovesCheck(MyChessPiece Knight)
 {
   //is king in check from knight
   if (IsPieceThreateningKing(Knight,  2,  1, true, 'N') ||
@@ -262,7 +297,7 @@ bool MoveGenerator::KnightMovesCheck(ChessPiece Knight)
     return false;
 }//end KnightMovesCheck
 
-bool MoveGenerator::CheckMovesInDirection(ChessPiece& StartingPiece, const int RowChange, const int ColumnChange, const bool KingorKnight)
+bool MoveGenerator::CheckMovesInDirection(MyChessPiece& StartingPiece, const int RowChange, const int ColumnChange, const bool KingorKnight)
 {
   //vars
   Location TempLocation = StartingPiece.PieceLocation;
@@ -277,14 +312,14 @@ bool MoveGenerator::CheckMovesInDirection(ChessPiece& StartingPiece, const int R
     //if space is empty
     if (CurrentBoard.IsLocationEmpty(TempLocation))
     {
-      StartingPiece.PossibleMoves.push(TempLocation);
+      DoesMoveEndInCheck(StartingPiece, TempLocation);
       if (KingorKnight)
         return false;
     }//end if
     //if space has enemy piece
     else if (CurrentBoard.IsPieceEnemy(StartingPiece.PieceLocation, TempLocation))
     {
-      StartingPiece.PossibleMoves.push(TempLocation);
+      DoesMoveEndInCheck(StartingPiece, TempLocation);
       return true;
     }//end else if
     //found my piece
@@ -299,7 +334,7 @@ bool MoveGenerator::CheckMovesInDirection(ChessPiece& StartingPiece, const int R
   return false;
 }//end CheckMovesInDirection
 
-bool MoveGenerator::IsPieceThreateningKing(const ChessPiece King, const int RowChange, const int ColumnChange, const bool KingorKnight, const char LookingFor)
+bool MoveGenerator::IsPieceThreateningKing(const MyChessPiece King, const int RowChange, const int ColumnChange, const bool KingorKnight, const char LookingFor)
 {
   //vars
   Location TempLocation = King.PieceLocation;
@@ -328,105 +363,149 @@ bool MoveGenerator::IsPieceThreateningKing(const ChessPiece King, const int RowC
   return false;
 }//end IsPieceThreateningKing
 
-bool MoveGenerator::RemoveInCheckMoves(ChessPiece& MovedPiece, const int Direction)
+bool MoveGenerator::DoesMoveEndInCheck(MyChessPiece MovedPiece, Location EndLocation)
 {
   //vars
-  int MoveCount = MovedPiece.PossibleMoves.size();
-  Location TempLocation = MovedPiece.PossibleMoves.front();
-  ChessPiece TempPiece = MovedPiece;
   BoardState TempBoard = CurrentBoard;
-  bool CheckingKing = (MovedPiece.PieceType == 'k' || MovedPiece.PieceType == 'K');
+  MyChessPiece TempPiece = MovedPiece;
 
   //set TempPiece to king location
   TempPiece.PieceLocation = CurrentBoard.returnKingLocation();
 
-  //loop through each move
-  for (int i = 0; i < MoveCount; i++)
+  //if king set new location to where it moved
+  if (MovedPiece.PieceType == 'k' || MovedPiece.PieceType == 'K')
+    TempPiece.PieceLocation = EndLocation;
+  
+  //move piece to location and test if king is in check
+  CurrentBoard.MovePiece(MovedPiece.PieceLocation, EndLocation);
+  if (!KingMovesCheck(TempPiece) &&
+    !RookMovesCheck(TempPiece) &&
+    !BishopMovesCheck(TempPiece) &&
+    !QueenMovesCheck(TempPiece) &&
+    !KnightMovesCheck(TempPiece) && 
+    !IsPieceThreateningKing(TempPiece, CurrentBoard.Direction, 1, true, 'P') &&
+    !IsPieceThreateningKing(TempPiece, CurrentBoard.Direction, -1, true, 'P'))
   {
-    //if king set new location to where it moved
-    if (MovedPiece.PieceType == 'k' || MovedPiece.PieceType == 'K')
-      TempPiece.PieceLocation = MovedPiece.PossibleMoves.front();
-
-    //move piece to location and test if king is in check
-    CurrentBoard.MovePiece(MovedPiece.PieceLocation, MovedPiece.PossibleMoves.front());
-    //remove location in front
-    MovedPiece.PossibleMoves.pop();
-
-    //see if x piece is threatening the king
-    if (!KingMovesCheck(TempPiece) &&
-      !RookMovesCheck(TempPiece) &&
-      !BishopMovesCheck(TempPiece) &&
-      !QueenMovesCheck(TempPiece) &&
-      !KnightMovesCheck(TempPiece) && 
-      !IsPieceThreateningKing(TempPiece, Direction, 1, true, 'P') &&
-      !IsPieceThreateningKing(TempPiece, Direction, -1, true, 'P'))
+    if (PossibleSimplifiedDraw && TempPiece.PieceType == MoveHistory[MoveHistory.size() - 4].PieceType
+      && MoveHistory[MoveHistory.size() - 4].PieceLocation.Column == EndLocation.Column
+      && MoveHistory[MoveHistory.size() - 4].PieceLocation.Row == EndLocation.Row)
     {
-      //re-add if not in check
-      MovedPiece.PossibleMoves.push(TempLocation);
-    }//end if
+      //don't add because causes early draw
+    }
+    else //re-add if not in check
+    {
+      MovePiecesQueue.push(MovePiece(MovedPiece, EndLocation, FindNextDepthHeuristic(EndLocation, MovedPiece.PieceType)));
+    }//end else
+  }//end if
+  CurrentBoard = TempBoard;
+  return true;
+}//end DoesMoveEndInCheck
 
-    //get next location
-    TempLocation = MovedPiece.PossibleMoves.front();
-    //reset board
-    CurrentBoard = TempBoard;
-  }//end for i
-
-  //make sure there are still possible moves
-  if (MovedPiece.PossibleMoves.size() > 0)
-    return true;
-  else
-    return false;
-}//end RemoveInCheckMoves
-
-Location MoveGenerator::RandomMove(int& ListId)
+Location MoveGenerator::MiniMax(int& ListId)
 {
   //vars
-  int RandLocation = 0;
-  int RandMove;
-  Location Output;
+  MyChessPiece TempPiece = MovePiecesQueue.top().CurrentPiece;
+  TempPiece.PieceLocation = MovePiecesQueue.top().EndLoc;
 
-  //make sure thier are possible moves
-  if (MovablePieces.size() > 0)
-    RandLocation = rand() % MovablePieces.size();
-  else
+  //add chosen move to history
+  MoveHistory.push_back(TempPiece);
+  //return listid and locaiton
+  ListId = MovePiecesQueue.top().CurrentPiece.ListId;
+  return TempPiece.PieceLocation;
+}//end GenerateAllMoves
+
+int MoveGenerator::FindNextDepthHeuristic(Location DestinationLocation, char MovedPieceType)
+{
+  //see if their are steps to go
+  if (DepthToGo >= 0)
   {
-    cout << "No possible moves found" << endl;
-    return Location();
-  }//end else
+    //vars
+    MyChessPiece TempPiece = MyChessPiece();
+    MoveGenerator NextDepth = MoveGenerator();
+    vector<MyChessPiece> TempPieceList = MoveHistory;
 
-  //remove until location
-  for (int i = 0; i < RandLocation; i++)
-    MovablePieces.pop();
+    //set temp piece values
+    TempPiece.PieceLocation = DestinationLocation;
+    TempPiece.PieceType = MovedPieceType;
+    //add piece to move history
+    TempPieceList.push_back(TempPiece);
+    NextDepth = MoveGenerator(CurrentBoard, TempPieceList, !Maximizing, true);
+    
+    //find heuristic for next depth
+    NextDepth.NextDepthMoves(DepthToGo-1);
+    
+    if (DepthToGo == 0)
+    {
+      //max depth reached, return value of current state
+      return NextDepth.ReturnHeuristicValue();
+    }//end if
+    else if (Maximizing)
+    {
+      //return max value at top of queue
+      return NextDepth.MovePiecesQueue.top().HeurValue;
+    } //end else if
+    else
+    {
+      //pop until min move is found
+      while (NextDepth.MovePiecesQueue.size() > 1)
+        NextDepth.MovePiecesQueue.pop();
+      return NextDepth.MovePiecesQueue.top().HeurValue;
+    }//end else
+  }//end if
+
+  return 0;
+}//end FindNextDepthHeuristic
+
+void  MoveGenerator::NextDepthMoves(const int pDepthToGo)
+{
+  //vars
+  MyChessPiece TempPiece = MyChessPiece();
+  DepthToGo = pDepthToGo;
   
-  //output piece
-  cout << "________________________________________" << endl;
-  cout << "Piece Type: " << MovablePieces.front().PieceType << endl;
-  cout << "  Column: " << MovablePieces.front().PieceLocation.Column << endl;
-  cout << "  Row: " << MovablePieces.front().PieceLocation.Row << endl;
-  cout << "Possible Move Destinations(Column, Row):" << endl;
-
-  //remove until move
-  RandMove = rand() % MovablePieces.front().PossibleMoves.size();
-  for (int i = 0; i < RandMove; i++)
+  //check every location for my pieces to move
+  for (int i = 0; i < 8; i++)
   {
-    cout << "  (" << MovablePieces.front().PossibleMoves.front().Column << ", " << MovablePieces.front().PossibleMoves.front().Row << ")" << endl;
-    MovablePieces.front().PossibleMoves.pop();
+    for (int j = 0; j < 8; j++)
+    {
+      if (CurrentBoard.BoardMap[i][j].PieceType != '*' && CurrentBoard.IsPieceMine(CurrentBoard.BoardMap[i][j].PieceLocation))
+      {
+        TempPiece = CurrentBoard.BoardMap[i][j];
+        //check for each peices movess
+        if (TempPiece.PieceType == 'P' || TempPiece.PieceType == 'p')
+          PawnMoves(TempPiece);
+        else if (TempPiece.PieceType == 'K' || TempPiece.PieceType == 'k')
+          KingMoves(TempPiece);
+        else if (TempPiece.PieceType == 'R' || TempPiece.PieceType == 'r')
+          RookMoves(TempPiece);
+        else if (TempPiece.PieceType == 'B' || TempPiece.PieceType == 'b')
+          BishopMoves(TempPiece);
+        else if (TempPiece.PieceType == 'Q' || TempPiece.PieceType == 'q')
+          QueenMoves(TempPiece);
+        else if (TempPiece.PieceType == 'N' || TempPiece.PieceType == 'n')
+          KnightMoves(TempPiece);
+      }//end if
+    }//end for j
   }//end for i
 
-  //set output location
-  Output = MovablePieces.front().PossibleMoves.front();
-  //set ListId
-  ListId = MovablePieces.front().ListId;
-  //print location moving to
-  cout << "  (" << MovablePieces.front().PossibleMoves.front().Column << ", " << MovablePieces.front().PossibleMoves.front().Row << ")<--Moving to this location" << endl;
-  MovablePieces.front().PossibleMoves.pop();
+  return;
+}//end Max
 
-  //print remaining moves for piece
-  while (MovablePieces.front().PossibleMoves.size() > 0)
-  {
-    cout << "  (" << MovablePieces.front().PossibleMoves.front().Column << ", " << MovablePieces.front().PossibleMoves.front().Row << ")" << endl;
-    MovablePieces.front().PossibleMoves.pop();
-  }//end for i
-  
-  return Output;
-}//end RandomMove
+void MoveGenerator::AddOpponentMove(Location NewPieceLocation, const string PieceType)
+{
+  //vars
+  MyChessPiece TempPiece = MyChessPiece();
+
+  //set location and type of oponents piece
+  TempPiece.PieceLocation = NewPieceLocation;
+  if (CurrentBoard.Direction == -1)//black
+    TempPiece.PieceType = PieceType[0];
+  else //white
+    TempPiece.PieceType = PieceType[0] + ('a' - 'A');
+  //spcial case for knights
+  if (PieceType == "Knight")
+    TempPiece.PieceType += 'N' - 'K';
+
+  //add to move history vector
+  MoveHistory.push_back(TempPiece);
+  return;
+}//end AddOpponentMove
