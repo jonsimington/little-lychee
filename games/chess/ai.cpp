@@ -22,7 +22,7 @@ int TempCount;
 std::string AI::get_name() const
 {
     // REPLACE WITH YOUR TEAM NAME!
-    return "Last Pawn Standing";
+    return "Little Lychee";
 }
 
 /// <summary>
@@ -69,20 +69,20 @@ bool AI::run_turn()
     StartingBoard.ForsythEdwardsNotationBoardInput(game->fen);
     MasterList = MoveGenerator(StartingBoard, MasterList.MoveHistory, true, false);
     print_current_board();
-    
+
     //add opponent last move to history
     if (game->moves.size() > 0)
         MasterList.AddOpponentMove(Location(static_cast<char>(game->moves[game->moves.size() - 1]->to_rank + '0'), game->moves[game->moves.size() - 1]->to_file[0]), game->moves[game->moves.size()-1]->piece->type);
-    
+
     //generate possible moves for my pieces
     for (int i = 0; i < player->pieces.size(); i++)
         MasterList.GenerateMoves(Location(static_cast<char>(player->pieces[i]->rank + '0'), player->pieces[i]->file[0]), i, player->pieces[i]->type, 1);
-    
+
     //pick random piece and make a valid move
     DestinationLocation = MasterList.MiniMax(ListId);
     if (DestinationLocation.Row != '-')
         player->pieces[ListId]->move(string(1, DestinationLocation.Column), (DestinationLocation.Row - '0'), "Queen");
-    
+
     return true; // to signify we are done with our turn.
 }
 
